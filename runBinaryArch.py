@@ -2,7 +2,7 @@
     Script to run binary classification on CUHKPQ, architecture category
     
     Usage:
-        To run from console, run `python runBinaryArch --data_dir PATH_TO_PhotoQualityDataset`
+        To run from console, run `python runBinaryArch.py --data_dir PATH_TO_PhotoQualityDataset`
 """
 
 import os
