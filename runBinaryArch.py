@@ -15,14 +15,13 @@ from featureExtractors import calcFeatures
 import argparse
 
 
-def main(args):
+def main(data_dir):
     """
         main function. can be used to debug in ipython notebook
         
         Args:
-            args: dictionary object for arguments such as {'data_dir':'path/to/PhotoQualityDataset/'}.
+            data_dir: string. Path to the unzipped PhotoQualityDataset folder
     """
-    data_dir = args.data_dir
     PATH = [data_dir+'/HighQuality/architecture/',data_dir+'/LowQuality/architecture/']
     labels = []
     feats = []
@@ -47,4 +46,4 @@ def main(args):
 if __name__=='__main__':
     p = argparse.ArgumentParser()
     p.add_argument('--data_dir', default='C:/PhotoQualityDataset/', type=str, help='Path to the unzipped PhotoQualityDataset folder')
-    main(p.parse_args())
+    main(p.parse_args().data_dir)
