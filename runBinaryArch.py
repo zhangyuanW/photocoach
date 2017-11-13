@@ -15,7 +15,7 @@ from featureExtractors import calcFeatures
 import argparse
 
 
-def main(data_dir):
+def main(data_dir='C:/PhotoQualityDataset/'):
     """
         main function. can be used to debug in ipython notebook
         
@@ -32,7 +32,7 @@ def main(data_dir):
         for i,f in enumerate(filelist):
             feats.append(calcFeatures(imread(f)))
             if i%100 == 0:
-                print('{0} out of {1} images done for label {2}.'.format(i, len(filelist), label))
+                print('Feature extraction: {0} out of {1} images done for label {2}.'.format(i, len(filelist), label))
         labels += [label]*len(filelist)
     feats = np.vstack(feats)
     labels = np.array(labels)

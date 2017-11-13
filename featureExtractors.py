@@ -27,5 +27,8 @@ def calcFeatures(image):
     res = []
     for featName in featureToUse:
         funcAndArgs = featureMap[featName]
-        res.append(funcAndArgs['func'](image,**funcAndArgs['kwargs']))
+        if 'kwargs' in funcAndArgs:
+            res.append(funcAndArgs['func'](image,**funcAndArgs['kwargs']))
+        else:
+            res.append(funcAndArgs['func'](image))
     return np.array(res)

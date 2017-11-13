@@ -23,6 +23,6 @@ def resizeAndVec(image,img_size=32):
             img_size: int. image will be resize to img_size by img_size
             
         Return:
-            vectorized image of length img_size*img_size
+            vectorized image of length img_size*img_size. Type np.array. Shape (dim,)
     """
     return imresize(rgb2gray(image),(img_size,img_size)).reshape(img_size*img_size)/255.0 - 0.5
