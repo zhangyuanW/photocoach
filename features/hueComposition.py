@@ -51,4 +51,4 @@ def hueCompose(image):
     result = hsv2[0]-hsv1[0];
     if result > 180:
         result = 360-180;
-    return result,
+    return np.array(result);
