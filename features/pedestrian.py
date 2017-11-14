@@ -4,11 +4,24 @@ import numpy as np
 import imutils
 import cv2
 
+def resize(image, length):
+    height = image.shape[0];
+    width = image.shape[1];
+
+    if height > width:
+        height = length
+        width = int(width*height/length)
+    else:
+        width = length
+        height = int(height*width/length)
+
+    return cv2.resize(image, (height, width));
+
 def pedestrianDetector(image):
     hog = cv2.HOGDescriptor()
     hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
-    image = imutils.resize(image, width=min(400, image.shape[1]))
+    image = resize(image, 400)
 
     # detect people in the image
     (rects, weights) = hog.detectMultiScale(image, winStride=(4, 4), padding=(8, 8), scale=1.05)
@@ -28,5 +41,5 @@ def pedestrianDetector(image):
         
     imageSize = image.shape[0]*image.shape[1]
     
-    result = [nums, float(total/imageSize)]
+    result = [nums, total/imageSize]
     return np.array(result)
