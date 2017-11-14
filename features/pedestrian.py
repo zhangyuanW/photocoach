@@ -7,15 +7,15 @@ import cv2
 def resize(image, length):
     height = image.shape[0];
     width = image.shape[1];
-
+    
     if height > width:
+        width = int(width*length/height)
         height = length
-        width = int(width*height/length)
     else:
+        height = int(height*length/width)
         width = length
-        height = int(height*width/length)
-
-    return cv2.resize(image, (height, width));
+    
+    return cv2.resize(image, (width, height));
 
 def pedestrianDetector(image):
     hog = cv2.HOGDescriptor()

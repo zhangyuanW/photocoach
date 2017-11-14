@@ -9,15 +9,15 @@ from matplotlib import pyplot as plt
 def resize(image, length):
     height = image.shape[0];
     width = image.shape[1];
-
+    
     if height > width:
+        width = int(width*length/height)
         height = length
-        width = int(width*height/length)
     else:
+        height = int(height*length/width)
         width = length
-        height = int(height*width/length)
-
-    return cv2.resize(image, (height, width));
+    
+    return cv2.resize(image, (width, height));
 
 def rgb2hsv(r, g, b):
     r, g, b = r/255.0, g/255.0, b/255.0
@@ -41,7 +41,10 @@ def rgb2hsv(r, g, b):
 
 def hueCompose(image):
     #img = cv2.imread('639328.jpg')
-    image = resize(image, 400)
+    image = resize(image, 200)
+    if len(image.shape) == 2:
+        image = cv2.cvtColor(image,cv2.COLOR_GRAY2RGB)
+        
     Z = image.reshape((-1,3))
 
     # convert to np.float32
