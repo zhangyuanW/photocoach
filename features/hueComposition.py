@@ -35,7 +35,7 @@ def hueCompose(image):
     # define criteria, number of clusters(K) and apply kmeans()
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
     K = 8
-    ret,label,center=cv2.kmeans(Z,K,None,criteria,10,cv2.KMEANS_RANDOM_CENTERS)
+    ret,label,center=cv2.kmeans(Z,K,criteria,10,cv2.KMEANS_RANDOM_CENTERS)
 
     counter = collections.defaultdict(int);
     for la in label:
@@ -48,7 +48,7 @@ def hueCompose(image):
     hsv1 = rgb2hsv(color1[0],color1[1],color1[2]);
     hsv2 = rgb2hsv(color2[0],color2[1],color2[2]);
 
-    result = hsv2[0]-hsv1[0];
+    result = abs(hsv2[0]-hsv1[0]);
     if result > 180:
-        result = 360-180;
+        result = 360-result;
     return np.array(result);
