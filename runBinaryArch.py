@@ -8,8 +8,6 @@
 import os
 import numpy as np
 import glob
-from sklearn.utils import shuffle
-from scipy.misc import imread
 from buildClassifiers import runBinaryCV
 import argparse
 from util_IO import getFeatLabel

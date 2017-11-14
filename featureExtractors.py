@@ -3,7 +3,7 @@
     
     feature script should take at least two inputs: np array of image and another arg (could be dummy if not used), and return 1d np array vector.
 """
-from features import baseline, hueComposition
+from features import baseline, hueComposition, siftDesc
 import numpy as np
 
 # add more features here
@@ -13,19 +13,28 @@ featureMap = {'baseline':
                     },
               'hueComposition':
                     {'func':hueComposition.hueCompose
+                    },
+              'sift':
+                    {'func':siftDesc.calcSIFT
                     }
             }
-featureToUse = ['baseline']
+featureToUse = ['baseline','hueComposition']
 
-def calcFeatures(image):
+def calcFeatures(image, feats = featureToUse):
     """
         Run the features in featureMap, with each func and args
+        
+        Args:
+            image: np array data of image
+            feats: feat names to use. By default, use what is in featureToUse
         
         Return:
             feature vector concatenated from all features
     """
+    if not feats:
+        feats = featureToUse
     res = []
-    for featName in featureToUse:
+    for featName in feats:
         funcAndArgs = featureMap[featName]
         if 'kwargs' in funcAndArgs:
             res.append(funcAndArgs['func'](image,**funcAndArgs['kwargs']))
