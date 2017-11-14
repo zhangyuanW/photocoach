@@ -35,7 +35,6 @@ def getFeatLabel(data_dir, num=None, featureNames = []):
             if num and i >= num-1:
                 break
         labels += [label]*(i+1)
-    raise
     feats = np.vstack(feats)
     labels = np.array(labels)
     
@@ -43,3 +42,20 @@ def getFeatLabel(data_dir, num=None, featureNames = []):
     X,Y = shuffle(feats,labels,random_state=0)
     
     return X,Y
+    
+def readImageLabel(data_dir, num=None):
+    PATH = [data_dir+'/HighQuality/architecture/',data_dir+'/LowQuality/architecture/']
+    labels = []
+    images = []
+    
+    # read both high and low, calc features
+    for p,label in zip(PATH,[1,0]):
+        filelist = glob.glob(p+'*.jpg')
+        for i,f in enumerate(filelist):
+            images.append(imread(f))
+            if i%100 == 0:
+                print('Image read: {0} out of {1} images done for label {2}.'.format(i, len(filelist), label))
+            if num and i >= num-1:
+                break
+        labels += [label]*(i+1)
+    return images, labels

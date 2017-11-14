@@ -40,4 +40,4 @@ def calcFeatures(image, feats = featureToUse):
             res.append(funcAndArgs['func'](image,**funcAndArgs['kwargs']))
         else:
             res.append(funcAndArgs['func'](image))
-    return np.array(res)
+    return np.concatenate(res)
