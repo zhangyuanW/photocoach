@@ -28,5 +28,5 @@ def pedestrianDetector(image):
         
     imageSize = image.shape[0]*image.shape[1]
     
-    result = [nums, total/imageSize]
+    result = [nums, float(total/imageSize)]
     return np.array(result)
