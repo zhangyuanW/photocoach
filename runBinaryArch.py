@@ -19,7 +19,7 @@ def main(data_dir='C:/PhotoQualityDataset/'):
         Args:
             data_dir: string. Path to the unzipped PhotoQualityDataset folder
     """
-    X,Y = getFeatLabel(data_dir)
+    X,Y,_ = getFeatLabel(data_dir)
     
     # run Cross Validation
     runBinaryCV(X,Y)
