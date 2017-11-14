@@ -3,7 +3,21 @@ import collections
 import cv2
 import colorsys
 import operator
+import imutils
 from matplotlib import pyplot as plt
+
+def resize(image, length):
+    height = image.shape[0];
+    width = image.shape[1];
+
+    if height > width:
+        height = length
+        width = int(width*height/length)
+    else:
+        width = length
+        height = int(height*width/length)
+
+    return cv2.resize(image, (height, width));
 
 def rgb2hsv(r, g, b):
     r, g, b = r/255.0, g/255.0, b/255.0
@@ -27,6 +41,7 @@ def rgb2hsv(r, g, b):
 
 def hueCompose(image):
     #img = cv2.imread('639328.jpg')
+    image = resize(image, 400)
     Z = image.reshape((-1,3))
 
     # convert to np.float32
@@ -51,4 +66,4 @@ def hueCompose(image):
     result = abs(hsv2[0]-hsv1[0]);
     if result > 180:
         result = 360-result;
-    return np.array(result);
+    return np.array([result]);
