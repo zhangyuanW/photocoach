@@ -26,6 +26,8 @@ def getFeatLabel(data_dir, num=None, featureNames = []):
     labels = []
     feats = []
     names = []
+    if not num:
+        num = len(filelist)
     # read both high and low, calc features
     for p,label in zip(PATH,[1,0]):
         filelist = glob.glob(p+'*.jpg')
@@ -33,9 +35,10 @@ def getFeatLabel(data_dir, num=None, featureNames = []):
             feats.append(calcFeatures(imread(f),featureNames))
             names.append(f)
             if i%100 == 0:
-                print('Feature extraction: {0} out of {1} images done for label {2}.'.format(i, len(filelist), label))
+                print('Feature extraction: {0} out of {1} images done for label {2}.'.format(i, num, label))
             if num and i >= num-1:
                 break
+        print('Feature extraction: {0} out of {1} images done for label {2}.'.format(i, num, label))
         labels += [label]*(i+1)
     feats = np.vstack(feats)
     labels = np.array(labels)
