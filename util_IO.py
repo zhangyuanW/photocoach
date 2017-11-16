@@ -31,6 +31,8 @@ def getFeatLabel(data_dir, num=None, featureNames = []):
         filelist = glob.glob(p+'*.jpg')
         if not num:
             num = len(filelist)
+        if not filelist:
+            raise Exception ('file not found under '+p)
         for i,f in enumerate(filelist):
             feats.append(calcFeatures(imread(f),featureNames))
             names.append(f)
