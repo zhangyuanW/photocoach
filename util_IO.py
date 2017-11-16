@@ -26,11 +26,11 @@ def getFeatLabel(data_dir, num=None, featureNames = []):
     labels = []
     feats = []
     names = []
-    if not num:
-        num = len(filelist)
     # read both high and low, calc features
     for p,label in zip(PATH,[1,0]):
         filelist = glob.glob(p+'*.jpg')
+        if not num:
+            num = len(filelist)
         for i,f in enumerate(filelist):
             feats.append(calcFeatures(imread(f),featureNames))
             names.append(f)
