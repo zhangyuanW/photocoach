@@ -27,7 +27,7 @@ groupFeatureMap = {'bow':
                     'testfunc': siftDesc.assignGroup    # test func should take features and model (output from trainfunc), and give features
                     }
             }
-featureToUse = ['baseline','hueComposition']
+featureToUse = ['baseline','hueComposition','pedestrian']
 groupFeatureToUse = 'bow'
 
 def calcFeatures(image, feats = featureToUse):
