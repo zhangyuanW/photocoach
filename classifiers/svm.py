@@ -26,3 +26,17 @@ def svmBinaryCV(X,Y,**dummy):
     clf = sklearn.svm.SVC(**args['CUHKPQ'])
     scores = cross_val_score(clf, X, Y, cv=5)
     return scores.mean()
+    
+def svmTrain(X,Y):
+    """
+        train svm model and return model
+    """
+    clf = sklearn.svm.SVC(**args['CUHKPQ'])
+    clf.fit(X, Y) 
+    return clf
+
+def svmTest(clf,X,Y):
+    """
+        test svm model, return accuracy
+    """
+    return clf.score(X, Y)

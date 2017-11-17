@@ -18,7 +18,14 @@ featureMap = {'baseline':
                     {'func':siftDesc.calcSIFT
                     }
             }
+groupFeatureMap = {'bow':
+                    {'pre': siftDesc.calcSIFTAll,
+                    'trainfunc': siftDesc.trainKmeans,  # train func should take features, train a model dict with key 'name' and 'model'
+                    'testfunc': siftDesc.assignGroup    # test func should take features and model (output from trainfunc), and give features
+                    }
+            }
 featureToUse = ['baseline','hueComposition']
+groupFeatureToUse = 'bow'
 
 def calcFeatures(image, feats = featureToUse):
     """
@@ -41,3 +48,35 @@ def calcFeatures(image, feats = featureToUse):
         else:
             res.append(funcAndArgs['func'](image))
     return np.concatenate(res)
+
+def calcPreFeature(fileLists, featName = groupFeatureToUse):
+    """
+        calc feature required for group feature
+    """
+    if not featName:
+        featName = groupFeatureToUse
+    
+    func = groupFeatureMap[featName]
+    if 'pre' in func:
+        return func['pre'](fileLists)
+    else:
+        return fileLists
+        
+
+def calcModel(features, featName = groupFeatureToUse):
+    """
+        calc model with features trained on images
+    """
+    if not featName:
+        featName = groupFeatureToUse
+    func = groupFeatureMap[featName]
+    return func['trainfunc'](features)
+
+def runModel(features, model, featName = groupFeatureToUse):
+    """
+        run the models on features to obtain (new) feature
+    """
+    if not featName:
+        featName = groupFeatureToUse
+    func = groupFeatureMap[featName]
+    return func['testfunc'](features, model)

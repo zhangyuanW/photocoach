@@ -24,7 +24,13 @@ def testHist(data_dir, featureName, num=None, normalize = True):
             import testFeatures
             X,Y,names = testFeatures.testHist(data_dir,'hueComposition',10)
     """
-    X,Y,imNames = getFeatLabel(data_dir,num,[featureName])
+    # read images and labels
+    images, labels, names = readImageLabel(data_dir)
+    
+    # calc individual features
+    indFeats = getIndividualFeat(images,[featureName])
+    
+    #X,Y,imNames = getFeatLabel(data_dir,num,[featureName])
     if normalize:
         myarray = X[Y==0]
         weights = np.ones_like(myarray)/float(len(myarray))
