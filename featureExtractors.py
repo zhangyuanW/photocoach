@@ -3,7 +3,7 @@
     
     feature script should take at least two inputs: np array of image and another arg (could be dummy if not used), and return 1d np array vector.
 """
-from features import baseline, hueComposition, siftDesc, pedestrian
+from features import baseline, hueComposition, siftDesc, pedestrian, lines
 import numpy as np
 
 # add more features here
@@ -19,6 +19,9 @@ featureMap = {'baseline':
                     },
               'pedestrian':
                     {'func':pedestrian.pedestrianDetector
+                    },
+              'lines':
+                    {'func':lines.lines
                     }
             }
 groupFeatureMap = {'bow':
@@ -27,7 +30,7 @@ groupFeatureMap = {'bow':
                     'testfunc': siftDesc.assignGroup    # test func should take features and model (output from trainfunc), and give features
                     }
             }
-featureToUse = ['baseline','hueComposition','pedestrian']
+featureToUse = ['baseline','hueComposition','pedestrian','lines']
 groupFeatureToUse = 'bow'
 
 def calcFeatures(image, feats = featureToUse):

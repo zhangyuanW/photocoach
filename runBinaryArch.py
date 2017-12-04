@@ -16,6 +16,11 @@ from sklearn.model_selection import KFold
 from sklearn.utils import shuffle
 import pandas as pd
 
+featGroups = [['baseline'],['hueComposition','pedestrian','lines'],['bow']]
+
+normalize = 'std'
+# normalize = 'maxmin'
+
 def main(data_dir = 'C:/PhotoQualityDataset/', recalc = False):
     """
         Read images & label, shuffle, calc individual features, calc group features, train classifier, test classifier
@@ -38,10 +43,22 @@ def main(data_dir = 'C:/PhotoQualityDataset/', recalc = False):
         test_label = [labels[i] for i in test_idx]
         
         groupFeatdf = getGroupFeat(names, train_idx, test_idx)
+        
         df = pd.concat((individualFeatdf,groupFeatdf),axis=1)
+        
+        # df = individualFeatdf
         # df = groupFeatdf
         trainX = np.array([np.concatenate(d) for d in df.loc[train_idx].values])
         testX = np.array([np.concatenate(d) for d in df.loc[test_idx].values])
+        
+        center = np.mean(trainX,axis=0)
+        if normalize == 'maxmin':
+            scale = np.max(trainX,axis=0) - np.min(trainX,axis=0)
+        else:
+            scale = np.std(trainX,axis=0)
+        trainX = np.divide(np.subtract(trainX,center),scale+1e-6)
+        testX = np.divide(np.subtract(testX,center),scale+1e-6)
+        
         model = svmTrain(trainX, train_label)
         res.append(svmTest(model,testX, test_label))
     print ('mean accuracy '+ str(sum(res)/len(res)))
