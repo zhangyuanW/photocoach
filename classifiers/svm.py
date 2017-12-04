@@ -10,7 +10,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.metrics import confusion_matrix
 import numpy as np
 
-args = {'CUHKPQ': {'kernel':'rbf', 'degree':1, 'C':1, 'class_weight':'balanced'}
+args = {'CUHKPQ': {'kernel':'rbf', 'degree':1, 'C':10, 'class_weight':'balanced'}
         }
 
 def svmBinaryCV(X,Y,**dummy):
@@ -29,18 +29,24 @@ def svmBinaryCV(X,Y,**dummy):
     scores = cross_val_score(clf, X, Y, cv=5)
     return scores.mean()
     
-def svmTrain(X,Y):
+def svmTrain(X,Y,param = None):
     """
         train svm model and return model
     """
-    clf = sklearn.svm.SVC(**args['CUHKPQ'])
+    if param == None:
+        clf = sklearn.svm.SVC(**args['CUHKPQ'])
+    else:
+        clf = sklearn.svm.SVC(**param)
     clf.fit(X, Y) 
     return clf
 
-def svmTest(clf,X,Y):
+def svmTest(clf,X,Y, featNames):
     """
         test svm model, return accuracy
     """
     predict = clf.predict(X)
+    print featNames
     print confusion_matrix(Y,predict)
-    return np.mean(predict==Y)
+    accu = np.mean(predict==Y)
+    print accu
+    return accu,predict

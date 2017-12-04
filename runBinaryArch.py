@@ -17,9 +17,12 @@ from sklearn.utils import shuffle
 import pandas as pd
 
 featGroups = [['baseline'],['hueComposition','pedestrian','lines'],['bow']]
+svmParam = [None,None, {'kernel':'rbf', 'degree':1, 'C':100, 'class_weight':'balanced'}]
+voteClassifier = True
 
 normalize = 'std'
 # normalize = 'maxmin'
+# normalize = 'none'
 
 def main(data_dir = 'C:/PhotoQualityDataset/', recalc = False):
     """
@@ -37,7 +40,9 @@ def main(data_dir = 'C:/PhotoQualityDataset/', recalc = False):
     # 5 fold
     kf = KFold(n_splits=5)
     res = []
-    for train_idx, test_idx in kf.split(list(range(len(labels)))):
+    truth = []
+    for sps, (train_idx, test_idx) in enumerate(kf.split(list(range(len(labels))))):
+        print ('*****split {0}*****'.format(sps))
         train_label = [labels[i] for i in train_idx]
         #test_img = [labels[i] for i in test_idx]
         test_label = [labels[i] for i in test_idx]
@@ -45,24 +50,41 @@ def main(data_dir = 'C:/PhotoQualityDataset/', recalc = False):
         groupFeatdf = getGroupFeat(names, train_idx, test_idx)
         
         df = pd.concat((individualFeatdf,groupFeatdf),axis=1)
-        
         # df = individualFeatdf
-        # df = groupFeatdf
-        trainX = np.array([np.concatenate(d) for d in df.loc[train_idx].values])
-        testX = np.array([np.concatenate(d) for d in df.loc[test_idx].values])
+        # df = groupFeatdf        
         
-        center = np.mean(trainX,axis=0)
-        if normalize == 'maxmin':
-            scale = np.max(trainX,axis=0) - np.min(trainX,axis=0)
-        else:
-            scale = np.std(trainX,axis=0)
-        trainX = np.divide(np.subtract(trainX,center),scale+1e-6)
-        testX = np.divide(np.subtract(testX,center),scale+1e-6)
-        
-        model = svmTrain(trainX, train_label)
-        res.append(svmTest(model,testX, test_label))
-    print ('mean accuracy '+ str(sum(res)/len(res)))
-    return res
+        if not voteClassifier:
+            featGroups[:] = [list(df.columns.values)]
+            svmParam = [None]
+        tmp = []
+        for feats,params in zip(featGroups,svmParam):
+            trainX = np.array([np.concatenate(d) for d in df[feats].loc[train_idx].values])
+            testX = np.array([np.concatenate(d) for d in df[feats].loc[test_idx].values])
+            
+            if normalize != 'none':
+                center = np.mean(trainX,axis=0)
+                if normalize == 'maxmin':
+                    scale = np.max(trainX,axis=0) - np.min(trainX,axis=0)
+                else:
+                    scale = np.std(trainX,axis=0)
+                trainX = np.divide(np.subtract(trainX,center),scale+1e-6)
+                testX = np.divide(np.subtract(testX,center),scale+1e-6)
+            
+            model = svmTrain(trainX, train_label,params)
+            
+            accu, pred = svmTest(model,testX, test_label, feats)
+            tmp.append(pred)
+        truth += test_label
+        res.append(np.array(tmp))
+    res = np.concatenate(res,axis=1)
+    if voteClassifier:
+        weight = np.array([1,0.8,0.5])
+        final_res = weight.dot(res)>1.5
+    else:
+        final_res = res[0]
+    truth = np.array(truth)
+    print ('mean accuracy '+ str(np.mean(final_res==truth)))
+    return final_res, truth
         
     
 
