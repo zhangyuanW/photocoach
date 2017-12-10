@@ -105,7 +105,7 @@ def getGroupFeat(fileLists, train_idx, test_idx, featureName = '', save_dir='./t
     if not os.path.isdir(save_dir):
         os.mkdir(save_dir)
     if os.path.exists(save_dir+'{0}.pickle'.format(featureName)) and not recalc:
-        print (featureName+' read from '+save_dir+'pre_{0}.npy'.format(featureName))
+        print (featureName+' read from '+save_dir+'{0}.pickle'.format(featureName))
         return pd.read_pickle(save_dir+'{0}.pickle'.format(featureName))
     if os.path.exists(save_dir+'pre_{0}.npy'.format(featureName)) and not recalc:
         prefeatures = np.load(save_dir+'pre_{0}.npy'.format(featureName))

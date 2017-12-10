@@ -6,7 +6,7 @@ from hueComposition import resize
 import numpy as np
 from sklearn.cluster import KMeans
 from scipy.misc import imread
-K = 500
+K = 1000
 
 def calcSIFT(img):
     """
@@ -18,7 +18,7 @@ def calcSIFT(img):
         gray = img
     gray = resize(gray,min(1024,max(gray.shape[0],gray.shape[1])))
     # Initiate SIFT detector
-    sift = cv2.SIFT(nfeatures=500)
+    sift = cv2.SIFT()
 
     # find the keypoints and descriptors with SIFT
     kp1, des = sift.detectAndCompute(gray,None)
@@ -42,8 +42,8 @@ def trainKmeans(SIFTs):
     """
         Give sift features, train a KMeans model
     """
-    features = np.concatenate([s for s in SIFTs if s is not None], axis=0)
-    features = features[::100]
+    features = np.concatenate([s[:500] for s in SIFTs if s is not None], axis=0)
+    features = features[::10]
     print ("running kmeans on sift samples {0}".format(len(features)))
     kmeans = KMeans(n_clusters=K, random_state=0).fit(features)
     return kmeans
@@ -58,12 +58,12 @@ def assignGroup(SIFTs, kmeans):
             groups = [0]*len(kmeans.cluster_centers_)
         else:
             groups = kmeans.predict(sifts)
-        # groups = [min((sum((ss-cc)**2 for ss,cc in zip(sft,c)),ic)\
-                    # for ic,c in enumerate(centers))[0]\
-                    # for sft in sifts]
-        thisres = [0]*len(kmeans.cluster_centers_)
-        for g in groups:
-            thisres[g] += 1.0/len(groups)
+            # groups = [min((sum((ss-cc)**2 for ss,cc in zip(sft,c)),ic)\
+                        # for ic,c in enumerate(centers))[0]\
+                        # for sft in sifts]
+            thisres = [0]*len(kmeans.cluster_centers_)
+            for g in groups:
+                thisres[g] += 1.0/len(sifts)
         res += [np.array(thisres)]
     return res
     

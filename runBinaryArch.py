@@ -14,15 +14,17 @@ import argparse
 from util_IO import getFeatLabel, readImageLabel, getIndividualFeat, getGroupFeat
 from sklearn.model_selection import KFold
 from sklearn.utils import shuffle
+from sklearn.metrics.pairwise import chi2_kernel, additive_chi2_kernel
 import pandas as pd
 
 featGroups = [['baseline'],['hueComposition','pedestrian','lines'],['bow']]
-svmParam = [None,None, {'kernel':'rbf', 'degree':1, 'C':100, 'class_weight':'balanced'}]
+svmParam = [None,None, {'kernel':chi2_kernel, 'degree':1, 'C':100, 'class_weight':'balanced'}]
 voteClassifier = True
 
 normalize = 'std'
 # normalize = 'maxmin'
-# normalize = 'none'
+normalize = 'none'
+list_normalize = ['std','std','none']
 
 def main(data_dir = 'C:/PhotoQualityDataset/', recalc = False):
     """
@@ -55,21 +57,20 @@ def main(data_dir = 'C:/PhotoQualityDataset/', recalc = False):
         
         if not voteClassifier:
             featGroups[:] = [list(df.columns.values)]
-            svmParam = [None]
+            svmParam[:] = [None]
         tmp = []
-        for feats,params in zip(featGroups,svmParam):
+        for feats,params,normType in zip(featGroups,svmParam,list_normalize):
             trainX = np.array([np.concatenate(d) for d in df[feats].loc[train_idx].values])
             testX = np.array([np.concatenate(d) for d in df[feats].loc[test_idx].values])
             
-            if normalize != 'none':
+            if normType != 'none':
                 center = np.mean(trainX,axis=0)
-                if normalize == 'maxmin':
+                if normType == 'maxmin':
                     scale = np.max(trainX,axis=0) - np.min(trainX,axis=0)
                 else:
                     scale = np.std(trainX,axis=0)
                 trainX = np.divide(np.subtract(trainX,center),scale+1e-6)
                 testX = np.divide(np.subtract(testX,center),scale+1e-6)
-            
             model = svmTrain(trainX, train_label,params)
             
             accu, pred = svmTest(model,testX, test_label, feats)

@@ -8,9 +8,11 @@
 import sklearn.svm
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics.pairwise import chi2_kernel, additive_chi2_kernel, paired_manhattan_distances
 import numpy as np
 
-args = {'CUHKPQ': {'kernel':'rbf', 'degree':1, 'C':10, 'class_weight':'balanced'}
+args = {'CUHKPQ': {'kernel':'rbf', 'degree':1, 'C':10, 'class_weight':'balanced'},
+        'SVM': {'kernel':chi2_kernel, 'degree':1, 'C':100, 'class_weight':'balanced'}
         }
 
 def svmBinaryCV(X,Y,**dummy):
@@ -37,7 +39,8 @@ def svmTrain(X,Y,param = None):
         clf = sklearn.svm.SVC(**args['CUHKPQ'])
     else:
         clf = sklearn.svm.SVC(**param)
-    clf.fit(X, Y) 
+    clf.fit(X, Y)
+    print clf.score(X,Y)
     return clf
 
 def svmTest(clf,X,Y, featNames):
