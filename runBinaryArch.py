@@ -17,12 +17,24 @@ from sklearn.model_selection import KFold
 from sklearn.utils import shuffle
 from sklearn.metrics.pairwise import chi2_kernel, additive_chi2_kernel
 import pandas as pd
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
+import itertools 
+import math
 
-# featGroups = [['baseline'],['hueComposition','pedestrian','lines'],['bow']]
-featGroups = [['baseline'],['hueComposition','pedestrian','lines']]
-svmParam = [None,None, {'kernel':chi2_kernel, 'degree':1, 'C':100, 'class_weight':'balanced'}]
+featGroups = [['baseline'],['hueComposition','pedestrian','lines'],['bow']]
+# featGroups = [['baseline'],['hueComposition']]
+svmParam = [None,None, {'kernel':chi2_kernel, 'degree':1, 'C':10, 'class_weight':'balanced'}]
+
+# Combination - Normalized Features
 voteClassifier = False
+mergeFeats = True
+
+# Combination - vote model
+voteClassifier = True
 mergeFeats = False
+voteTh = 1.4    # majority
+# voteTh = 0.8    # catch all
 
 normalize = 'std'
 # normalize = 'maxmin'
@@ -33,6 +45,8 @@ task_opts = {"binary":('/HighQuality/architecture/','/LowQuality/architecture/')
             "rotate20":('/HighQuality/architecture/','/HighQuality/architecture/rotate20/'),
             "rotateRandom":('/HighQuality/architecture/','/HighQuality/architecture/rotateRandom/'),
             "rotateRegression":('/HighQuality/architecture/','/HighQuality/architecture/rotateRegression/','dict.pickle')}
+
+disableBOW = ['bow'] not in featGroups
 
 def main(data_dir = 'C:/PhotoQualityDataset/', recalc = False, task = 'binary'):
     """
@@ -66,10 +80,13 @@ def main(data_dir = 'C:/PhotoQualityDataset/', recalc = False, task = 'binary'):
         train_label = [labels[i] for i in train_idx]
         #test_img = [labels[i] for i in test_idx]
         test_label = [labels[i] for i in test_idx]
-                
-        # groupFeatdf = getGroupFeat(names, train_idx, test_idx)
-        # df = pd.concat((individualFeatdf,groupFeatdf),axis=1)
-        df = individualFeatdf
+        
+        if disableBOW:
+            df = individualFeatdf
+        else:
+            groupFeatdf = getGroupFeat(names, train_idx, test_idx)
+            df = pd.concat((individualFeatdf,groupFeatdf),axis=1)
+        # 
         # df = groupFeatdf        
         
         if not voteClassifier and mergeFeats:
@@ -88,7 +105,7 @@ def main(data_dir = 'C:/PhotoQualityDataset/', recalc = False, task = 'binary'):
                     scale = np.std(trainX,axis=0)
                 trainX = np.divide(np.subtract(trainX,center),scale+1e-6)
                 testX = np.divide(np.subtract(testX,center),scale+1e-6)
-            model = svmTrain(trainX, train_label,params,regression)
+            model = svmTrain(trainX, train_label,params,feats,regression)
             
             accu, pred = svmTest(model,testX, test_label, feats, regression)
             tmp.append(pred)
@@ -96,15 +113,26 @@ def main(data_dir = 'C:/PhotoQualityDataset/', recalc = False, task = 'binary'):
         res.append(np.array(tmp))
     truth = np.array(truth)
     res = np.concatenate(res,axis=1)
-    if voteClassifier:
-        weight = np.array([0.6,2,0.8][:len(featGroups)])
-        final_res = weight.dot(res)>1
-        print ('mean accuracy '+ str(np.mean(final_res==truth)))
-    else:
+    if task != 'rotateRegression':
         for feats, partres in zip(featGroups, res):
             print ('mean accuracy '+str(feats)+' :'+ str(np.mean(partres==truth)))
-        final_res = res
-    
+            conf = confusion_matrix(truth, partres)
+            print (conf)
+    else:
+        for feats, partres in zip(featGroups, res):
+            print ('mean error '+str(feats)+' :'+ str(math.sqrt(((partres-truth)**2).mean())))
+        
+    if (voteClassifier or mergeFeats) and task != 'rotateRegression':
+        weight = np.array([1,0.8,1][:len(featGroups)])
+        final_res = weight.dot(res)>voteTh
+        print ('mean accuracy '+ str(np.mean(final_res==truth)))
+        conf = confusion_matrix(truth, final_res)
+        print (conf)
+        plot_confusion_matrix(conf,['low','high'])
+        plt.show()
+    else:
+        final_res = res.mean(axis=1)
+        print ('mean of error of three model: '+str(math.sqrt(((partres-truth)**2).mean())))
     return final_res, truth
         
     
@@ -122,6 +150,41 @@ def main_old(data_dir='C:/PhotoQualityDataset/'):
     
     # run Cross Validation
     runBinaryCV(X,Y)
+    
+def plot_confusion_matrix(cm, classes,
+                          normalize=False,
+                          title='Confusion matrix',
+                          cmap=plt.cm.Blues):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        print("Normalized confusion matrix")
+    else:
+        print('Confusion matrix, without normalization')
+
+    print(cm)
+
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+
     
 if __name__=='__main__':
     p = argparse.ArgumentParser()

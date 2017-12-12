@@ -70,7 +70,7 @@ def hueCompose(image):
     if result > 180:
         result = 360-result;
     
-    #return np.array([result])
+    return np.array([result])
     
     if goodCompose(result):
         return np.array([result,1,0]);

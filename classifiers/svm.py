@@ -15,7 +15,7 @@ from IPython.core.debugger import Tracer
 import math
 
 args = {'CUHKPQ': {'kernel':'rbf', 'degree':1, 'C':10, 'class_weight':'balanced'},
-        'SVM': {'kernel':chi2_kernel, 'degree':1, 'C':100, 'class_weight':'balanced'}
+        'SVMtest': {'kernel':chi2_kernel, 'degree':1, 'C':100, 'class_weight':'balanced'}
         }
 
 def svmBinaryCV(X,Y,**dummy):
@@ -34,7 +34,7 @@ def svmBinaryCV(X,Y,**dummy):
     scores = cross_val_score(clf, X, Y, cv=5)
     return scores.mean()
     
-def svmTrain(X,Y,param = None,regression=False):
+def svmTrain(X,Y,param = None,featNames = [],regression=False):
     """
         train svm model and return model
     """
@@ -49,8 +49,11 @@ def svmTrain(X,Y,param = None,regression=False):
     clf.fit(X, Y)
     score = clf.score(X,Y)
     predict = clf.predict(X)
-    print(score, math.sqrt(((predict-Y)**2).mean()))
-    # Tracer()()
+    print str(featNames)+' @train'
+    if regression:
+        print(score, math.sqrt(((predict-Y)**2).mean()))
+    else:
+        print score
     
     return clf
 
@@ -58,7 +61,7 @@ def svmTest(clf,X,Y, featNames, regression = False):
     """
         test svm model, return accuracy
     """
-    print featNames
+    print str(featNames)+' @test'
     if not regression:
         predict = clf.predict(X)
         print confusion_matrix(Y,predict)

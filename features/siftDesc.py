@@ -6,7 +6,7 @@ from hueComposition import resize
 import numpy as np
 from sklearn.cluster import KMeans
 from scipy.misc import imread
-K = 200
+K = 500
 
 def calcSIFT(img):
     """
@@ -63,7 +63,7 @@ def assignGroup(SIFTs, kmeans):
                         # for sft in sifts]
             thisres = [0]*len(kmeans.cluster_centers_)
             for g in groups:
-                thisres[g] += 1.0/len(sifts)
+                thisres[g] += 1.0 / len(sifts)
         res += [np.array(thisres)]
     return res
     
