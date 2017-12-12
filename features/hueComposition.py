@@ -69,4 +69,15 @@ def hueCompose(image):
     result = abs(hsv2[0]-hsv1[0]);
     if result > 180:
         result = 360-result;
-    return np.array([result]);
+    
+    #return np.array([result])
+    
+    if goodCompose(result):
+        return np.array([result,1,0]);
+    return np.array([result,0,1]);
+
+def goodCompose(result):
+    if result <= 10 or result >= 170:
+        return True;
+    else:
+        return False;
