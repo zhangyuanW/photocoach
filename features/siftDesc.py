@@ -6,7 +6,7 @@ from hueComposition import resize
 import numpy as np
 from sklearn.cluster import KMeans
 from scipy.misc import imread
-K = 1000
+K = 200
 
 def calcSIFT(img):
     """

@@ -8,6 +8,11 @@ import numpy as np
 from sklearn.utils import shuffle
 import pandas as pd
 import os 
+from sklearn.model_selection import KFold
+import pickle
+
+imgSubPath = ('/HighQuality/architecture/','/LowQuality/architecture/')
+task = 'binary'
 
 def getFeatLabel(data_dir, num=None, featureNames = []):
     """
@@ -25,7 +30,7 @@ def getFeatLabel(data_dir, num=None, featureNames = []):
             Y: N by 1 label
             names: list of path to the images, in the order of feature
     """
-    PATH = [data_dir+'/HighQuality/architecture/',data_dir+'/LowQuality/architecture/']
+    PATH = [data_dir+imgSubPath[0],data_dir+imgSubPath[1]]
     labels = []
     feats = []
     names = []
@@ -79,8 +84,8 @@ def getIndividualFeat(fileLists, num=None, featureNames = [], recalc = False, sa
     for feat in featureNames:
         feats[feat] = []
         # if stored feature file exists
-        if os.path.exists(save_dir+'{0}.npy'.format(feat)) and not recalc and num == len(fileLists):
-            feats[feat] = list(np.load(save_dir+'{0}.npy'.format(feat)))
+        if os.path.exists(save_dir+task+'_{0}.npy'.format(feat)) and not recalc and num == len(fileLists):
+            feats[feat] = list(np.load(save_dir+task+'_{0}.npy'.format(feat)))
             print(feat+' read from file done')
         else:
             for i in range(num):
@@ -88,7 +93,7 @@ def getIndividualFeat(fileLists, num=None, featureNames = [], recalc = False, sa
                 if i%100 == 0:
                     print('Feature extraction {2}: {0} out of {1} images done.'.format(i, num, feat))
             if num == len(fileLists):
-                np.save(save_dir+'{0}.npy'.format(feat), feats[feat])
+                np.save(save_dir+task+'_{0}.npy'.format(feat), feats[feat])
         print('Feature extraction {2}: {0} out of {1} images done.'.format(num, num, feat))
     feats = pd.DataFrame(feats)
     
@@ -104,23 +109,57 @@ def getGroupFeat(fileLists, train_idx, test_idx, featureName = '', save_dir='./t
     featureName = featureName or groupFeatureToUse
     if not os.path.isdir(save_dir):
         os.mkdir(save_dir)
-    if os.path.exists(save_dir+'{0}.pickle'.format(featureName)) and not recalc:
-        print (featureName+' read from '+save_dir+'{0}.pickle'.format(featureName))
-        return pd.read_pickle(save_dir+'{0}.pickle'.format(featureName))
-    if os.path.exists(save_dir+'pre_{0}.npy'.format(featureName)) and not recalc:
-        prefeatures = np.load(save_dir+'pre_{0}.npy'.format(featureName))
-        print (featureName+' raw read from '+save_dir+'pre_{0}.npy'.format(featureName))
+    if os.path.exists(save_dir+task+'_{0}.pickle'.format(featureName)) and not recalc:
+        print (featureName+' read from '+save_dir+task+'_{0}.pickle'.format(featureName))
+        return pd.read_pickle(save_dir+task+'_{0}.pickle'.format(featureName))
+    if os.path.exists(save_dir+task+'_pre_{0}.npy'.format(featureName)) and not recalc:
+        prefeatures = np.load(save_dir+task+'_pre_{0}.npy'.format(featureName))
+        print (featureName+' raw read from '+save_dir+task+'_pre_{0}.npy'.format(featureName))
     else:
         prefeatures = calcPreFeature(fileLists, featureName)
-        np.save(save_dir+'pre_{0}.npy'.format(featureName), prefeatures)
+        np.save(save_dir+task+'_pre_{0}.npy'.format(featureName), prefeatures)
     models = calcModel([prefeatures[i] for i in train_idx], featureName)
     features = runModel(prefeatures, models, featureName)
     features = pd.DataFrame({(featureName or groupFeatureToUse): features})
-    features.to_pickle(save_dir+'{0}.pickle'.format(featureName))
+    features.to_pickle(save_dir+task+'_{0}.pickle'.format(featureName))
     return features
     
 def readImageLabel(data_dir, num=None, save_dir = './temp/', name_only = True):
-    PATH = [data_dir+'/HighQuality/architecture/',data_dir+'/LowQuality/architecture/']
+    PATH = [data_dir+imgSubPath[0],data_dir+imgSubPath[1]]
+    print PATH
+    
+    if name_only and len(imgSubPath) == 3:
+        label = pickle.load(open(data_dir+imgSubPath[1]+imgSubPath[2],'r'))
+        nameGroup = [label[k]['name'] for k in label]
+        labelGroup = [label[k]['label'] for k in label]
+        nameGroup,labelGroup = shuffle(nameGroup,labelGroup, random_state=0)
+        kf = KFold(n_splits=5)
+        train_labels = []
+        train_names = []
+        test_labels = []
+        test_names = []
+        res_tr = []
+        res_te = []
+        for train_idx,test_idx in kf.split(nameGroup):
+            tmp = []
+            for tr in train_idx:
+                tmp += list(range(5*tr,5*tr+5))
+            tmp = shuffle(tmp,random_state=0)
+            res_tr.append(tmp)
+            tmp = []
+            for te in test_idx:
+                tmp += list(range(5*te,5*te+5))
+            tmp = shuffle(tmp,random_state=0)
+            res_te.append(tmp)
+        
+        labels = []
+        names = []
+        for ng,lg in zip(nameGroup,labelGroup):
+            labels += lg
+            names += [data_dir+imgSubPath[1]+nng for nng in ng]
+        
+        return [(tr,te) for tr,te in zip(res_tr,res_te)], labels, names
+        
 
     if not os.path.isdir(save_dir):
         os.mkdir(save_dir)
