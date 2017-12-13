@@ -7,6 +7,15 @@ BY Zhangyuan Wang, Jiaxi Chen, Ziran Zhang
     *   `python runBinaryArch.py --task binary --data_dir ./data/`
 * To train for another task (e.g. rotation related), specify different `task` option. You may need to first create the augmented dataset by running script in `testNewDataset.ipynb` 
 * By default the code will cache features and read previously calculated ones in `./temp/`. To force recalculation, use the option `--recalc`.  
+    * To access the precomputed models, download the file at https://drive.google.com/open?id=1bK9f4FH3wEguGNdKReavbilrOqvfEavF, and extract it to ./temp/
+    
+## Requirement and dependency
+* Python 2.7
+* cv2
+* imutils
+* numpy
+* pandas
+* sklearn
     
 ## Architecture
 *   Features:
